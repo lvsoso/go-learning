@@ -1,0 +1,6 @@
+rocksdb_performance/rocksdb/*
+test/libtest.a
+test/test.o
+rocksdb_performance/ingest_data
+rocksdb_performance/test_basic
+rocksdb_performance/test_batch_write

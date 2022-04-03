@@ -1,0 +1,6 @@
+[submodule "rocksdb"]
+	path = rocksdb
+	url = https://github.com/facebook/rocksdb
+[submodule "go-cache"]
+	path = go-cache
+	url = github.com:lvsoso/go-cache
