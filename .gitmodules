@@ -4,3 +4,6 @@
 [submodule "go-cache"]
 	path = go-cache
 	url = github.com:lvsoso/go-cache
+[submodule "go-object"]
+	path = go-object
+	url = https://github.com/lvsoso/go-object
