@@ -1,7 +1,9 @@
-package server
+package socks5
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 )
@@ -32,6 +34,7 @@ func (s *SOCKS5Server) Run() error {
 		}
 
 		go func() {
+			defer conn.Close()
 			err := handleConnection(conn)
 			if err != nil {
 				log.Printf("connection failure from %s: %s", conn.RemoteAddr(), err)
@@ -42,7 +45,30 @@ func (s *SOCKS5Server) Run() error {
 
 func handleConnection(conn net.Conn) error {
 	// consult
+	if err := auth(conn); err != nil {
+		return err
+	}
 	// request
 	// forward
 	return nil
+}
+
+func auth(conn io.ReadWriter) error {
+	clientMessage, err := NewClientAuthMessage(conn)
+	if err != nil {
+		return err
+	}
+
+	var acceptable bool
+	for _, method := range clientMessage.Methods {
+		if method == MethodNoAuth {
+			acceptable = true
+		}
+	}
+
+	if !acceptable {
+		NewServerAuthMessage(conn, MethodNoAcceptable)
+		return errors.New("method not supported")
+	}
+	return NewServerAuthMessage(conn, MethodNoAuth)
 }
