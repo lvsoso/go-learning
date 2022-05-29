@@ -1,7 +1,6 @@
 package socks5
 
 import (
-	"errors"
 	"io"
 )
 
@@ -12,6 +11,12 @@ const (
 	MethodGSSAPI       Method = 0x01
 	MethodPassword     Method = 0x02
 	MethodNoAcceptable Method = 0xff
+)
+
+const (
+	PasswordMethodVersion = 0x01
+	PasswordAuthSuccess   = 0x00
+	PasswordAuthFailure   = 0x01
 )
 
 type ClientAuthMessage struct {
@@ -30,7 +35,7 @@ func NewClientAuthMessage(conn io.Reader) (*ClientAuthMessage, error) {
 
 	// Validate version
 	if buf[0] != SOCKS5Version {
-		return nil, errors.New("Protocol version not supported")
+		return nil, ErrVersionNotSupported
 	}
 
 	// Read Methods
@@ -51,5 +56,49 @@ func NewClientAuthMessage(conn io.Reader) (*ClientAuthMessage, error) {
 func NewServerAuthMessage(conn io.Writer, method Method) error {
 	buf := []byte{SOCKS5Version, method}
 	_, err := conn.Write(buf)
+	return err
+}
+
+type ClientPasswordMessage struct {
+	Username string
+	Password string
+}
+
+func NewClientPasswordMessage(conn io.Reader) (*ClientPasswordMessage, error) {
+	//Read version and username length
+	buf := make([]byte, 2)
+	if _, err := io.ReadFull(conn, buf); err != nil {
+		return nil, err
+	}
+
+	version, usernameLen := buf[0], buf[1]
+	if version != PasswordMethodVersion {
+		return nil, ErrMethodVersionNotSupported
+	}
+
+	// Read username, password length
+	buf = make([]byte, usernameLen+1)
+	if _, err := io.ReadFull(conn, buf); err != nil {
+		return nil, err
+	}
+
+	username, passwordLen := string(buf[:len(buf)-1]), buf[len(buf)-1]
+
+	// Read password
+	if len(buf) < int(passwordLen) {
+		buf = make([]byte, passwordLen)
+	}
+	if _, err := io.ReadFull(conn, buf[:passwordLen]); err != nil {
+		return nil, err
+	}
+
+	return &ClientPasswordMessage{
+		Username: username,
+		Password: string(buf[:passwordLen]),
+	}, nil
+}
+
+func WriteServerPasswordMessage(conn io.Writer, status byte) error {
+	_, err := conn.Write([]byte{PasswordMethodVersion, status})
 	return err
 }
