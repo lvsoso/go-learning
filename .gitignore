@@ -4,3 +4,4 @@ test/test.o
 rocksdb_performance/ingest_data
 rocksdb_performance/test_basic
 rocksdb_performance/test_batch_write
+aws-s3/cn_windows_10_consumer_editions_version_20h2_x64_dvd_d4f7a83e.iso
