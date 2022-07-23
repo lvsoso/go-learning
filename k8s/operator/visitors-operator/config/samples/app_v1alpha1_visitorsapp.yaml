@@ -4,3 +4,5 @@ metadata:
   name: visitorsapp-sample
 spec:
   # TODO(user): Add fields here
+  title: "haha"
+  size: 3
