@@ -1,0 +1,30 @@
+# https://kubernetes.io/docs/concepts/workloads/pods/
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "greeter"
+  labels:
+    app: "greeter"
+spec:
+  containers:
+  - name: greeter
+    image: "docker.io/lvsoso/greeter-app:v0.1"
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
+    volumeMounts:
+    - name: localtime
+      mountPath: /etc/localtime
+    ports:
+    - containerPort:  80
+      name:  myjob
+  volumes:
+    - name: localtime
+      hostPath:
+        path: /usr/share/zoneinfo/Asia/Shanghai
+  restartPolicy: Always
+
