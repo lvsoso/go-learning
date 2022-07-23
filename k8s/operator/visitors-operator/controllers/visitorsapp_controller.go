@@ -19,12 +19,12 @@ package controllers
 import (
 	"context"
 
+	appv1alpha1 "github.com/lvsoso/visitor-operator/api/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	appv1alpha1 "github.com/lvsoso/visitor-operator/api/v1alpha1"
 )
 
 // VisitorsAppReconciler reconciles a VisitorsApp object
@@ -50,13 +50,24 @@ func (r *VisitorsAppReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	_ = log.FromContext(ctx)
 
 	// TODO(user): your logic here
+	visitorsApp := &appv1alpha1.VisitorsApp{}
+	err := r.Get(ctx, req.NamespacedName, visitorsApp)
 
-	return ctrl.Result{}, nil
+	//// with error
+	return ctrl.Result{}, err
+	//// without an error
+	// return ctrl.Result{Requeue: true}, nil
+	//// stop the reconcile
+	// return ctrl.Result{}, nil
+	/// /reconcile again after X time
+	//  return ctrl.Result{RequeueAfter: nextRun.Sub(r.Now())}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *VisitorsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&appv1alpha1.VisitorsApp{}).
+	return ctrl.NewControllerManagedBy(mgr). // provides a controller builder that allows various controller configurations.
+							For(&appv1alpha1.VisitorsApp{}). // specifies the VisitorsApp type as the primary resource to watch.
+							Owns(&appsv1.Deployment{}).      // specifies the Deployments type as the secondary resource to watch.
+		// WithOptions(controller.Options{MaxConcurrentReconciles: 2}).
 		Complete(r)
 }
